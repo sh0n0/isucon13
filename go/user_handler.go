@@ -97,7 +97,7 @@ func getIconHandler(c echo.Context) error {
 	defer tx.Rollback()
 
 	var userId int64
-	if err := tx.GetContext(ctx, &userId, "SELECT userId FROM users WHERE name = ?", username); err != nil {
+	if err := tx.GetContext(ctx, &userId, "SELECT id FROM users WHERE name = ?", username); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusNotFound, "not found user that has the given username")
 		}
