@@ -500,11 +500,15 @@ func fillLivestreamResponse(ctx context.Context, tx *sqlx.Tx, livestreamModel Li
 		return Livestream{}, err
 	}
 	var tags []Tag
-	for _, t := range tagModels {
-		tags = append(tags, Tag{
-			ID:   t.ID,
-			Name: t.Name,
-		})
+	if len(tagModels) == 0 {
+		tags = []Tag{}
+	} else {
+		for _, t := range tagModels {
+			tags = append(tags, Tag{
+				ID:   t.ID,
+				Name: t.Name,
+			})
+		}
 	}
 
 	livestream := Livestream{
