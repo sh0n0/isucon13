@@ -43,7 +43,7 @@ restart-infra:
 
 .PHONY: slow
 slow:
-	sudo pt-query-digest $(MYSQL_LOG)
+	sudo pt-query-digest $(MYSQL_LOG) | less
 
 .PHONY: alp
 alp:
