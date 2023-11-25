@@ -144,9 +144,26 @@ func postIconHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to delete old user icon: "+err.Error())
 	}
 
-	rs, err := tx.ExecContext(ctx, "INSERT INTO icons (user_id, image) VALUES (?, ?)", userID, req.Image)
+	// imageのsha256を計算
+	iconHash := sha256.Sum256(req.Image)
+
+	// 画像のハッシュ値もInsert
+	rs, err := tx.ExecContext(ctx, "INSERT INTO icons (user_id, image, image_hash) VALUES (?, ?, ?)", userID, req.Image, fmt.Sprintf("%x", iconHash))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to insert new user icon: "+err.Error())
+	}
+
+	// usernameをファイル名として、imageをファイルに保存
+	var username string
+	if err := tx.GetContext(ctx, &username, "SELECT name FROM users WHERE id = ?", userID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return echo.NewHTTPError(http.StatusNotFound, "not found user that has the given username")
+		}
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get user: "+err.Error())
+	}
+
+	if err := os.WriteFile(fmt.Sprintf("./public/%d.jpg", username), req.Image, 0666); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to save user icon: "+err.Error())
 	}
 
 	iconID, err := rs.LastInsertId()
@@ -404,17 +421,18 @@ func fillUserResponse(ctx context.Context, tx *sqlx.Tx, userModel UserModel) (Us
 		return User{}, err
 	}
 
-	var image []byte
-	if err := tx.GetContext(ctx, &image, "SELECT image FROM icons WHERE user_id = ?", userModel.ID); err != nil {
+	// iconのハッシュ値をDBから取得
+	var iconHash [32]byte
+	if err := tx.GetContext(ctx, iconHash, "SELECT image_hash FROM icons WHERE user_id = ?", userModel.ID); err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			return User{}, err
 		}
-		image, err = os.ReadFile(fallbackImage)
+		image, err := os.ReadFile(fallbackImage)
 		if err != nil {
 			return User{}, err
 		}
+		iconHash = sha256.Sum256(image)
 	}
-	iconHash := sha256.Sum256(image)
 
 	user := User{
 		ID:          userModel.ID,
