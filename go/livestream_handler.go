@@ -494,10 +494,17 @@ func fillLivestreamResponse(ctx context.Context, tx *sqlx.Tx, livestreamModel Li
 		return Livestream{}, err
 	}
 
-	var tags []Tag
-	err = tx.SelectContext(ctx, &tags, "SELECT tags.id, tags.name FROM livestream_tags INNER JOIN tags ON livestream_tags.tag_id = tags.id WHERE livestream_id = ?", livestreamModel.ID)
+	var tagModels []TagModel
+	err = tx.SelectContext(ctx, &tagModels, "SELECT tags.id, tags.name FROM livestream_tags INNER JOIN tags ON livestream_tags.tag_id = tags.id WHERE livestream_id = ?", livestreamModel.ID)
 	if err != nil {
 		return Livestream{}, err
+	}
+	var tags []Tag
+	for _, t := range tagModels {
+		tags = append(tags, Tag{
+			ID:   t.ID,
+			Name: t.Name,
+		})
 	}
 
 	livestream := Livestream{
