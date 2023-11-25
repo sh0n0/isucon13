@@ -161,7 +161,7 @@ func postIconHandler(c echo.Context) error {
 		}
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get user: "+err.Error())
 	}
-	if err := os.WriteFile("./public/"+username+".jpg", req.Image, 0666); err != nil {
+	if err := os.WriteFile("/home/isucon/webapp/public/"+username+".jpg", req.Image, 0666); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to save user icon: "+err.Error())
 	}
 
