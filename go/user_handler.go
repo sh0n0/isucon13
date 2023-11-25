@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -144,15 +145,6 @@ func postIconHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to delete old user icon: "+err.Error())
 	}
 
-	// imageのsha256を計算
-	iconHash := sha256.Sum256(req.Image)
-
-	// 画像のハッシュ値もInsert
-	rs, err := tx.ExecContext(ctx, "INSERT INTO icons (user_id, image, image_hash) VALUES (?, ?, ?)", userID, req.Image, fmt.Sprintf("%x", iconHash))
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "failed to insert new user icon: "+err.Error())
-	}
-
 	// usernameをファイル名として、imageをファイルに保存
 	var username string
 	if err := tx.GetContext(ctx, &username, "SELECT name FROM users WHERE id = ?", userID); err != nil {
@@ -163,6 +155,24 @@ func postIconHandler(c echo.Context) error {
 	}
 	if err := os.WriteFile("/home/isucon/webapp/public/"+username+".jpg", req.Image, 0666); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to save user icon: "+err.Error())
+	}
+
+	// 保存したファイルからSha256でEtagを生成
+	file := "/home/isucon/webapp/public/" + username + ".jpg"
+	f, err := os.Open(file)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to open user icon: "+err.Error())
+	}
+	defer f.Close()
+	iconHash := sha256.New()
+	if _, err := io.Copy(iconHash, f); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to read user icon: "+err.Error())
+	}
+
+	// 画像のハッシュ値もInsert
+	rs, err := tx.ExecContext(ctx, "INSERT INTO icons (user_id, image, image_hash) VALUES (?, ?, ?)", userID, req.Image, fmt.Sprintf("%x", iconHash))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to insert new user icon: "+err.Error())
 	}
 
 	iconID, err := rs.LastInsertId()
