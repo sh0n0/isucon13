@@ -423,7 +423,7 @@ func fillUserResponse(ctx context.Context, tx *sqlx.Tx, userModel UserModel) (Us
 
 	// iconのハッシュ値をDBから取得
 	var iconHash [32]byte
-	if err := tx.GetContext(ctx, iconHash, "SELECT image_hash FROM icons WHERE user_id = ?", userModel.ID); err != nil {
+	if err := tx.GetContext(ctx, &iconHash, "SELECT image_hash FROM icons WHERE user_id = ?", userModel.ID); err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			return User{}, err
 		}
