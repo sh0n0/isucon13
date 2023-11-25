@@ -390,11 +390,10 @@ func moderateHandler(c echo.Context) error {
 	// NGワードにヒットする過去の投稿も全削除する
 	var likeConditions []string
 	for _, ngword := range ngwords {
-		like := "comment LIKE %" + ngword.Word + "%"
+		like := fmt.Sprintf("comment LIKE '%%%s%%'", ngword.Word)
 		likeConditions = append(likeConditions, like)
 	}
-	query := fmt.Sprintf("DELETE FROM livecomments WHERE livestream_id = ? AND comment AND %s", strings.Join(likeConditions, " OR "))
-
+	query := fmt.Sprintf("DELETE FROM livecomments WHERE livestream_id = ? AND (%s)", strings.Join(likeConditions, " OR "))
 	if _, err := tx.ExecContext(ctx, query, livestreamID); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to delete old livecomments that hit spams: "+err.Error())
 	}
