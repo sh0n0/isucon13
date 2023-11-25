@@ -433,6 +433,20 @@ func fillUserResponse(ctx context.Context, tx *sqlx.Tx, userModel UserModel) (Us
 			return User{}, err
 		}
 		iconHash = sha256.Sum256(image)
+
+		user := User{
+			ID:          userModel.ID,
+			Name:        userModel.Name,
+			DisplayName: userModel.DisplayName,
+			Description: userModel.Description,
+			Theme: Theme{
+				ID:       themeModel.ID,
+				DarkMode: themeModel.DarkMode,
+			},
+			IconHash: fmt.Sprintf("%x", iconHash),
+		}
+
+		return user, nil
 	}
 	iconHash = [32]byte(rawIconHash)
 
