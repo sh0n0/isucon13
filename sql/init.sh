@@ -13,7 +13,7 @@ ISUCON_DB_USER=${ISUCON13_MYSQL_DIALCONFIG_USER:-isucon}
 ISUCON_DB_PASSWORD=${ISUCON13_MYSQL_DIALCONFIG_PASSWORD:-isucon}
 ISUCON_DB_NAME=${ISUCON13_MYSQL_DIALCONFIG_DATABASE:-isupipe}
 
-rm /home/isucon/webapp/public/*.jpg 2>/dev/null
+rm /home/isucon/webapp/public/*.jpg 2>/dev/null || true
 
 # MySQLを初期化
 mysql -u"$ISUCON_DB_USER" \
