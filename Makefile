@@ -9,7 +9,7 @@ DB_PASS:=isucon
 DB_NAME:=isupipe
 
 SERVICE:=isupipe-go.service
-ALPM:="/api/livestream/[0-9]+/livecomment,/api/livestream/[0-9]+/reaction,/api/user/.+/icon,/api/livestream/[0-9]+/report,/api/livestream/[0-9]+,/api/livestream/[0-9]+/livecomment/[0-9]+/report,/api/livestream/[0-9]+/enter,/api/livestream/[0-9]+/exit,/api/livestream/[0-9]+/ngwords,/api/user/.+/theme,/api/user/.+/statistics,/api/livestream/[0-9]+/moderate"
+ALPM:="/api/livestream/[0-9]+/livecomment,/api/livestream/[0-9]+/reaction,/api/user/.+/icon,/api/livestream/[0-9]+/report,/api/livestream/[0-9]+/livecomment/[0-9]+/report,/api/livestream/[0-9]+/enter,/api/livestream/[0-9]+/exit,/api/livestream/[0-9]+/ngwords,/api/user/.+/theme,/api/user/.+/statistics,/api/livestream/[0-9]+/moderate,/api/livestream/[0-9]+/statistics,/api/user/.+/livestream"
 ####################################################################
 
 MYSQL_CMD:=mysql -h$(DB_HOST) -P$(DB_PORT) -u$(DB_USER) -p$(DB_PASS) $(DB_NAME)
