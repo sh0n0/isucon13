@@ -422,7 +422,6 @@ func fillUserResponse(ctx context.Context, tx *sqlx.Tx, userModel UserModel) (Us
 
 	// iconのハッシュ値をDBから取得
 	var rawIconHash string
-	var iconHash [32]byte
 	if err := tx.GetContext(ctx, &rawIconHash, "SELECT image_hash FROM icons WHERE user_id = ?", userModel.ID); err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			return User{}, err
@@ -432,7 +431,7 @@ func fillUserResponse(ctx context.Context, tx *sqlx.Tx, userModel UserModel) (Us
 		if err != nil {
 			return User{}, err
 		}
-		iconHash = sha256.Sum256(image)
+		iconHash := sha256.Sum256(image)
 
 		user := User{
 			ID:          userModel.ID,
@@ -448,8 +447,6 @@ func fillUserResponse(ctx context.Context, tx *sqlx.Tx, userModel UserModel) (Us
 
 		return user, nil
 	}
-	temp := []byte(rawIconHash)
-	iconHash = [32]byte(temp)
 
 	user := User{
 		ID:          userModel.ID,
@@ -460,7 +457,7 @@ func fillUserResponse(ctx context.Context, tx *sqlx.Tx, userModel UserModel) (Us
 			ID:       themeModel.ID,
 			DarkMode: themeModel.DarkMode,
 		},
-		IconHash: fmt.Sprintf("%x", iconHash),
+		IconHash: rawIconHash,
 	}
 
 	return user, nil
